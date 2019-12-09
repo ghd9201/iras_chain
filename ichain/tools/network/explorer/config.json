@@ -1,8 +1,8 @@
 {
     "network-configs": {
-        "fchain-net": {
-            "name": "fchain-net",
-            "profile": "./connection-profile/fchain-net.json"
+        "iras-net": {
+            "name": "iras-net",
+            "profile": "./connection-profile/iras-net.json"
         }
     },
     "license": "Apache-2.0"

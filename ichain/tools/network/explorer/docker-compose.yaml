@@ -1,19 +1,19 @@
 version: "3"
 
 networks:
-  fchain-net:
+  iras-net:
     external: true
 
 services:
   explorer.fchain.com:
-    container_name: explorer.fchain.com
+    container_name: explorer.iras.com
     image: hyperledger/explorer
     volumes:
       - ./config.json:/opt/explorer/app/platform/fabric/config.json
       - ./connection-profile:/opt/explorer/app/platform/fabric/connection-profile
-      - ../crypto:/tmp/crypto
+      - ../crypto-config:/tmp/crypto
     environment:
-      - DATABASE_HOST=db.explorer.fchain.com
+      - DATABASE_HOST=db.explorer.iras.com
       - DATABASE_USERNAME=hppoc
       - DATABASE_PASSWD=password
       - DISCOVERY_AS_LOCALHOST=false
@@ -21,10 +21,10 @@ services:
     ports:
       - 8090:8080
     networks:
-      - fchain-net
+      - iras-net
 
   db.explorer.fchain.com:
-    container_name: db.explorer.fchain.com
+    container_name: db.explorer.iras.com
     image: hyperledger/explorer-db
     environment:
       - DATABASE_DATABASE=fabricexplorer
@@ -33,4 +33,4 @@ services:
     volumes:
       - ./createdb.sh:/docker-entrypoint-initdb.d/createdb.sh
     networks:
-      - fchain-net
+      - iras-net

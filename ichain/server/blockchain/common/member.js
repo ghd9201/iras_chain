@@ -1,9 +1,3 @@
-/**
- *
- * Copyright 2018 KT All Rights Reserved.
- *
- */
-
 import l from '../../common/logger';
 
 function getAdminContext(client, mspId) {
