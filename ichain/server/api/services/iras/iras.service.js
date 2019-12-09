@@ -5,7 +5,7 @@ const transaction = require('../../../blockchain/transaction/transaction');
 class IrasService {
   addFile(req, res) {
 
-    var org = req.body.Org;
+    var org = req.body.org;
 
     var peer = '';
 
