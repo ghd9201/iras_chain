@@ -5,6 +5,11 @@ const transaction = require('../../../blockchain/transaction/transaction');
 class IrasService {
   addFile(req, res) {
 
+    l.info(`${this.constructor.name}.byId(${req})`);
+    const args = [];
+    const peers = [];
+
+    /*
     var org = req.body.org;
 
     var peer = '';
@@ -13,10 +18,10 @@ class IrasService {
       peer = 'peer0.org1.iras.com';
     else
       peer = 'peer0.org2.iras.com';
+*/
 
-    l.info(`${this.constructor.name}.byId(${req})`);
-    const args = [];
-    const peers = [];
+    var org = 'org1';
+    var peer = 'peer0.org1.iras.com';
 
     args.push(req.body.fileHash);
     args.push(req.body.fileName);
