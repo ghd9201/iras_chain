@@ -97,6 +97,11 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.addFile(stub, args)
 	}
 
+	if function == "query" {
+		// Add an entity to its state
+		return t.query(stub, args)
+	}
+
 	logger.Errorf("Unknown action, check the first argument, must be one of 'addFile' : %v", args[0])
 	return shim.Error(fmt.Sprintf("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'. But got: %v", args[0]))
 }
