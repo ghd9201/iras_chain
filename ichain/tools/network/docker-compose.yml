@@ -1,0 +1,321 @@
+#
+# Copyright IBM Corp All Rights Reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+version: '3'
+
+#networks:
+#  basic:
+
+networks:
+  irasnetwork:
+    external:
+      name: iras-net
+
+services:
+  ca.org1.com:
+    image: hyperledger/fabric-ca${DOCKER_IMG_TAG}
+    environment:
+    - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+    - FABRIC_CA_SERVER_CA_NAME=ca.org1.com
+    - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.iras.com-cert.pem
+    - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/a9e3a0b8d979f36d64198789dbea60bd5fa16bcd4737fa58a11bd6332051b13e_sk
+    ports:
+    - "7054:7054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw'
+    volumes:
+    - ./crypto-config/peerOrganizations/org1.iras.com/ca/:/etc/hyperledger/fabric-ca-server-config
+    container_name: ca.org1.com
+    networks:
+    - irasnetwork
+
+  ca.org2.com:
+    image: hyperledger/fabric-ca${DOCKER_IMG_TAG}
+    environment:
+    - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+    - FABRIC_CA_SERVER_CA_NAME=ca.org2.com
+    - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.iras.com-cert.pem
+    - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/3dc71e42d54c3893cf478d07199dca426b23b54c1c0d7a6463aff71db4f7e45a_sk
+    ports:
+    - "7154:7054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw'
+    volumes:
+    - ./crypto-config/peerOrganizations/org2.iras.com/ca/:/etc/hyperledger/fabric-ca-server-config
+    container_name: ca.org2.com
+    networks:
+    - irasnetwork
+
+  orderer.iras.com:
+    container_name: orderer.iras.com
+    image: hyperledger/fabric-orderer${DOCKER_IMG_TAG}
+    environment:
+    - ORDERER_GENERAL_LOGLEVEL=debug
+    - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+    - ORDERER_GENERAL_GENESISMETHOD=file
+    - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+    - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+    - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/orderer/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/orderer
+    command: orderer
+    ports:
+    - 7050:7050
+    volumes:
+    - ./channel-artifacts/:/etc/hyperledger/configtx
+    - ./crypto-config/ordererOrganizations/iras.com/orderers/orderer.iras.com/:/etc/hyperledger/msp/orderer
+    - ./crypto-config/peerOrganizations/org1.iras.com/peers/peer0.org1.iras.com/:/etc/hyperledger/msp/peerOrg1
+    - ./crypto-config/peerOrganizations/org2.iras.com/peers/peer0.org2.iras.com/:/etc/hyperledger/msp/peerOrg2
+    networks:
+    - irasnetwork
+
+  peer0.org1.iras.com:
+    container_name: peer0.org1.iras.com
+    image: hyperledger/fabric-peer${DOCKER_IMG_TAG}
+    environment:
+    - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+    - CORE_PEER_ID=peer0.org1.iras.com
+    - CORE_LOGGING_PEER=debug
+    - CORE_CHAINCODE_LOGGING_LEVEL=debug
+    - CORE_PEER_LOCALMSPID=Org1MSP
+    - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+    - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.iras.com:7051
+    - CORE_PEER_ADDRESS=peer0.org1.iras.com:7051
+    - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.iras.com:7051
+    # # the following setting starts chaincode containers on the same
+    # # bridge network as the peers
+    # # https://docs.docker.com/compose/networking/
+    # - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
+    - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=iras-net
+    - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
+    # The CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME and CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD
+    # provide the credentials for ledger to connect to CouchDB.  The username and password must
+    # match the username and password set for the associated CouchDB.
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+#    - CORE_PEER_GOSSIP_USELEADERELECTION=true
+#    - CORE_PEER_GOSSIP_ORGLEADER=false
+#    - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    # command: peer node start --peer-chaincodedev=true
+    ports:
+    - 7051:7051
+    - 7053:7053
+    volumes:
+    - /var/run/:/host/var/run/
+    - ./crypto-config/peerOrganizations/org1.iras.com/peers/peer0.org1.iras.com/msp:/etc/hyperledger/msp/peer
+    - ./crypto-config/peerOrganizations/org1.iras.com/users:/etc/hyperledger/msp/users
+    - ./channel-artifacts:/etc/hyperledger/configtx
+    depends_on:
+    - orderer.iras.com
+    - couchdb
+    networks:
+    - irasnetwork
+
+  peer1.org1.iras.com:
+    container_name: peer1.org1.iras.com
+    image: hyperledger/fabric-peer${DOCKER_IMG_TAG}
+    environment:
+    - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+    - CORE_PEER_ID=peer1.org1.iras.com
+    - CORE_LOGGING_PEER=debug
+    - CORE_CHAINCODE_LOGGING_LEVEL=debug
+    - CORE_PEER_LOCALMSPID=Org1MSP
+    - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+    - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org1.iras.com:7051
+    - CORE_PEER_ADDRESS=peer1.org1.iras.com:7051
+    - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org1.iras.com:7051
+    # # the following setting starts chaincode containers on the same
+    # # bridge network as the peers
+    # # https://docs.docker.com/compose/networking/
+    # - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
+    - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=iras-net
+    - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
+    # The CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME and CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD
+    # provide the credentials for ledger to connect to CouchDB.  The username and password must
+    # match the username and password set for the associated CouchDB.
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+    #  - CORE_PEER_GOSSIP_USELEADERELECTION=true
+    #  - CORE_PEER_GOSSIP_ORGLEADER=false
+    #  - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    # command: peer node start --peer-chaincodedev=true
+    ports:
+    - 7151:7051
+    - 7153:7053
+    volumes:
+    - /var/run/:/host/var/run/
+    - ./crypto-config/peerOrganizations/org1.iras.com/peers/peer1.org1.iras.com/msp:/etc/hyperledger/msp/peer
+    - ./crypto-config/peerOrganizations/org1.iras.com/users:/etc/hyperledger/msp/users
+    - ./channel-artifacts:/etc/hyperledger/configtx
+    depends_on:
+    - orderer.iras.com
+    - couchdb
+    networks:
+    - irasnetwork
+
+  peer0.org2.iras.com:
+    container_name: peer0.org2.iras.com
+    image: hyperledger/fabric-peer${DOCKER_IMG_TAG}
+    environment:
+    - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+    - CORE_PEER_ID=peer0.org2.iras.com
+    - CORE_LOGGING_PEER=debug
+    - CORE_CHAINCODE_LOGGING_LEVEL=debug
+    - CORE_PEER_LOCALMSPID=Org2MSP
+    - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+    - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.iras.com:7051
+    - CORE_PEER_ADDRESS=peer0.org2.iras.com:7051
+    - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.iras.com:7051
+    # # the following setting starts chaincode containers on the same
+    # # bridge network as the peers
+    # # https://docs.docker.com/compose/networking/
+    # - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
+    - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=iras-net
+    - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
+    # The CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME and CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD
+    # provide the credentials for ledger to connect to CouchDB.  The username and password must
+    # match the username and password set for the associated CouchDB.
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+#    - CORE_PEER_GOSSIP_USELEADERELECTION=true
+#    - CORE_PEER_GOSSIP_ORGLEADER=false
+#    - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    # command: peer node start --peer-chaincodedev=true
+    ports:
+    - 7251:7051
+    - 7253:7053
+    volumes:
+    - /var/run/:/host/var/run/
+    - ./crypto-config/peerOrganizations/org2.iras.com/peers/peer0.org2.iras.com/msp:/etc/hyperledger/msp/peer
+    - ./crypto-config/peerOrganizations/org2.iras.com/users:/etc/hyperledger/msp/users
+    - ./channel-artifacts:/etc/hyperledger/configtx
+    depends_on:
+    - orderer.iras.com
+    - couchdb
+    networks:
+    - irasnetwork
+
+  peer1.org2.iras.com:
+    container_name: peer1.org2.iras.com
+    image: hyperledger/fabric-peer${DOCKER_IMG_TAG}
+    environment:
+    - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+    - CORE_PEER_ID=peer1.org2.iras.com
+    - CORE_LOGGING_PEER=debug
+    - CORE_CHAINCODE_LOGGING_LEVEL=debug
+    - CORE_PEER_LOCALMSPID=Org2MSP
+    - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/peer/
+    - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org2.iras.com:7051
+    - CORE_PEER_ADDRESS=peer1.org2.iras.com:7051
+    - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org2.iras.com:7051
+    # # the following setting starts chaincode containers on the same
+    # # bridge network as the peers
+    # # https://docs.docker.com/compose/networking/
+    # - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
+    - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=iras-net
+    - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
+    # The CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME and CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD
+    # provide the credentials for ledger to connect to CouchDB.  The username and password must
+    # match the username and password set for the associated CouchDB.
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+#    - CORE_PEER_GOSSIP_USELEADERELECTION=true
+#    - CORE_PEER_GOSSIP_ORGLEADER=false
+#    - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: peer node start
+    # command: peer node start --peer-chaincodedev=true
+    ports:
+    - 7351:7051
+    - 7353:7053
+    volumes:
+    - /var/run/:/host/var/run/
+    - ./crypto-config/peerOrganizations/org2.iras.com/peers/peer1.org2.iras.com/msp:/etc/hyperledger/msp/peer
+    - ./crypto-config/peerOrganizations/org2.iras.com/users:/etc/hyperledger/msp/users
+    - ./channel-artifacts:/etc/hyperledger/configtx
+    depends_on:
+    - orderer.iras.com
+    - couchdb
+    networks:
+    - irasnetwork
+
+  couchdb:
+    container_name: couchdb
+    image: hyperledger/fabric-couchdb${THIRDPARTY_IMG_TAG}
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+    environment:
+    - COUCHDB_USER=
+    - COUCHDB_PASSWORD=
+    ports:
+    - 5984:5984
+    networks:
+    - irasnetwork
+
+  cli1:
+    container_name: cli1
+    image: hyperledger/fabric-tools${DOCKER_IMG_TAG}
+    tty: true
+    environment:
+    - GOPATH=/opt/gopath
+    - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+    - FABRIC_LOGGING_SPEC=debug
+    - CORE_PEER_ID=cli1
+    - CORE_PEER_ADDRESS=peer0.org1.iras.com:7051
+    - CORE_PEER_LOCALMSPID=Org1MSP
+    - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.iras.com/users/Admin@org1.iras.com/msp
+    - CORE_CHAINCODE_KEEPALIVE=10
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+    - /var/run/:/host/var/run/
+    - ./cli:/opt/gopath/src/github.com/hyperledger/fabric/peer/cli
+    - ./channel-artifacts/:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    - ../chaincodes:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/go
+    - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+    - ./channel-artifacts/channel.block:/opt/gopath/src/github.com/hyperledger/fabric/peer
+    networks:
+    - irasnetwork
+    depends_on:
+    - orderer.iras.com
+    - peer0.org1.iras.com
+    - couchdb
+
+  cli2:
+    container_name: cli2
+    image: hyperledger/fabric-tools${DOCKER_IMG_TAG}
+    tty: true
+    environment:
+    - GOPATH=/opt/gopath
+    - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+    - FABRIC_LOGGING_SPEC=debug
+    - CORE_PEER_ID=cli2
+    - CORE_PEER_ADDRESS=peer0.org2.iras.com:7051
+    - CORE_PEER_LOCALMSPID=Org2MSP
+    - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.iras.com/users/Admin@org2.iras.com/msp
+    - CORE_CHAINCODE_KEEPALIVE=10
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+    - /var/run/:/host/var/run/
+    - ./cli:/opt/gopath/src/github.com/hyperledger/fabric/peer/cli
+    - ./channel-artifacts/:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    - ../chaincodes:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/go
+    - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+    - ./channel-artifacts/channel.block:/opt/gopath/src/github.com/hyperledger/fabric/peer
+    networks:
+    - irasnetwork
+    depends_on:
+    - orderer.iras.com
+    - peer0.org2.iras.com
+    - couchdb
+

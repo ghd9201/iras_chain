@@ -1,0 +1,242 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: Hyperledger Fabric 1.2 Iras Chain API
+  description: Simple Api Sample for to interact with HLF 1.2 NETWORK
+basePath: /api/v1
+tags:
+  - name: Examples
+    description: Simple example endpoints
+  - name: Iras
+    description: Iras endpoints
+  - name: Specification
+    description: The swagger API specification
+
+consumes:
+  - application/json
+produces:
+  - application/json
+
+definitions:
+
+  ExampleBody:
+    type: object
+    title: example
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        example: no_stress
+
+  file:
+    required:
+    - fileHash
+    - fileName
+    - userName
+    - security 
+    - fileSize
+    - accessType
+    - result
+    - date
+    - description
+    properties:
+      fileHash:
+        type: string
+      fileName:
+        type: string
+      userName:
+        type: string
+      security:
+        type: string
+      fileSize:
+        type: integer
+      accessType:
+        type: string
+      result:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+
+  move:
+    required:
+    - from
+    - to
+    - amount
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+      amount:
+        type: integer
+
+  user:
+    required:
+    - name
+    - balance
+    properties:
+      name:
+        type: string
+      balance:
+        type: integer
+
+
+paths:
+  /balance/saveUser:
+    post:
+      tags:
+      - Balance
+      description: Fetch all examples
+      parameters:
+      - name: Channel
+        in: query
+        type: string
+        description: an example
+        required: true
+      - name: Id
+        in: query
+        type: string
+        description: an example
+        required: true
+      - name: Name
+        in: query
+        type: string
+        description: an example
+        required: true
+      - name: Age
+        in: query
+        type: string
+        description: an example
+        required: true
+      - name: Sex
+        in: query
+        type: string
+        description: an example
+        required: true
+      responses:
+        200:
+          description: Returns all examples
+
+
+
+  /iras/addFile:
+    post:
+      tags:
+      - Iras
+      Summary: Add the new File info
+      parameters:
+       - name: files
+         in: body
+         required: true
+         schema:
+           $ref: "#/definitions/file"
+      description: The id of the user to be added
+      responses:
+        200:
+          description: Returns File's Hash
+
+  /examples:
+    get:
+      tags:
+        - Examples
+      description: Fetch all examples
+      responses:
+        200:
+          description: Returns all examples
+    post:
+      tags:
+        - Examples
+      description: Create a new example
+      parameters:
+        - name: example
+          in: body
+          description: an example
+          required: true
+          schema:
+            $ref: "#/definitions/ExampleBody"
+      responses:
+        200:
+          description: Returns all examples
+
+  /examples/{id}:
+    get:
+      tags:
+        - Examples
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The id of the example to retrieve
+          type: integer
+      responses:
+        200:
+          description: Return the example with the specified id
+        404:
+          description: Example not found
+
+  /balance/hello:
+    get:
+      tags:
+      - Balance
+      description: Get User Balance
+      responses:
+        200:
+          description: Returns User's Currently Balance
+
+  /balance/{id}:
+    get:
+      tags:
+      - Balance
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: The id of the user to retrieve currently balance
+        type: string
+      description: Get User Balance
+      responses:
+        200:
+          description: Returns User's Currently Balance
+  /balance/user:
+    post:
+      tags:
+      - Balance
+      Summary: Add the new user
+      parameters:
+      - name: id
+        in: body
+        required: true
+        schema:
+          $ref: "#/definitions/user"
+      description: The id of the user to be added
+      responses:
+        200:
+          description: Returns User's Current Balance
+
+  /balance:
+    post:
+      tags:
+      - Balance
+      parameters:
+      - name: move balance request
+        in: body
+        description: The id of the user to retrieve currently balance
+        required: true
+        schema:
+          $ref: "#/definitions/move"
+      description: Get User Balance
+      responses:
+        200:
+          description: Returns User's Currently Balance
+
+
+  /spec:
+    get:
+      tags:
+        - Specification
+      responses:
+        200:
+          description: Return the API specification

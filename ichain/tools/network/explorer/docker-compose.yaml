@@ -1,0 +1,36 @@
+version: "3"
+
+networks:
+  fchain-net:
+    external: true
+
+services:
+  explorer.fchain.com:
+    container_name: explorer.fchain.com
+    image: hyperledger/explorer
+    volumes:
+      - ./config.json:/opt/explorer/app/platform/fabric/config.json
+      - ./connection-profile:/opt/explorer/app/platform/fabric/connection-profile
+      - ../crypto:/tmp/crypto
+    environment:
+      - DATABASE_HOST=db.explorer.fchain.com
+      - DATABASE_USERNAME=hppoc
+      - DATABASE_PASSWD=password
+      - DISCOVERY_AS_LOCALHOST=false
+    command: sh -c "sleep 16&& node /opt/explorer/main.js && tail -f /dev/null"
+    ports:
+      - 8090:8080
+    networks:
+      - fchain-net
+
+  db.explorer.fchain.com:
+    container_name: db.explorer.fchain.com
+    image: hyperledger/explorer-db
+    environment:
+      - DATABASE_DATABASE=fabricexplorer
+      - DATABASE_USERNAME=hppoc
+      - DATABASE_PASSWORD=password
+    volumes:
+      - ./createdb.sh:/docker-entrypoint-initdb.d/createdb.sh
+    networks:
+      - fchain-net
