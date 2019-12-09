@@ -3,4 +3,4 @@ import controller from './controller';
 
 export default express
   .Router()
-  .post('/addFile', controller.addFile)
+  .post('/addFile', controller.addFile());

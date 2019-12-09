@@ -4,11 +4,19 @@ const transaction = require('../../../blockchain/transaction/transaction');
 
 class IrasService {
   addFile(req, res) {
+
+    var org = req.body.Org;
+
+    var peer = '';
+
+    if( org == 'Org1')
+      peer = 'peer0.org1.iras.com';
+    else
+      peer = 'peer0.org2.iras.com';
+
     l.info(`${this.constructor.name}.byId(${req})`);
     const args = [];
     const peers = [];
-//    const peers2 = [];
-    const peers2 = [];
 
     args.push(req.body.fileHash);
     args.push(req.body.fileName);
@@ -20,18 +28,12 @@ class IrasService {
     args.push(req.body.date);
     args.push(req.body.description);
 
-    peers.push('peer0.org1.iras.com');
-    peers2.push('peer0.org2.iras.com');
-    //peers1.push('peer1.org1.cauiras.com');
-    //peers2.push('peer0.org2.cauiras.com');
-    //peers2.push('peer1.org2.cauiras.com');
+    peers.push(peer);
 
     l.debug(`invoke peers:${peers}`);
-    Promise.resolve(transaction.invokeChainCode(peers, 'iraschannel', 'iras', 'addFile', args, 'admin','Org1'));
-    return Promise.resolve(transaction.invokeChainCode(peers2, 'iraschannel', 'iras', 'addFile', args, 'admin','Org2'));
-	  
-    //return Promise.resolve(transaction.invokeChainCode(peers2, 'iraschannel', 'iras',
-      //'addFile', args, 'admin', 'Org2'));
+
+    return Promise.resolve(transaction.invokeChainCode(peers, 'iraschannel', 'iras', 'addFile', args, 'admin',org));
+
   }
 }
 

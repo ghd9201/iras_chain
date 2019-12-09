@@ -31,6 +31,7 @@ definitions:
 
   file:
     required:
+    - org
     - fileHash
     - fileName
     - userName
@@ -41,6 +42,8 @@ definitions:
     - date
     - description
     properties:
+      org:
+        type: string
       fileHash:
         type: string
       fileName:
@@ -85,44 +88,7 @@ definitions:
 
 
 paths:
-  /balance/saveUser:
-    post:
-      tags:
-      - Balance
-      description: Fetch all examples
-      parameters:
-      - name: Channel
-        in: query
-        type: string
-        description: an example
-        required: true
-      - name: Id
-        in: query
-        type: string
-        description: an example
-        required: true
-      - name: Name
-        in: query
-        type: string
-        description: an example
-        required: true
-      - name: Age
-        in: query
-        type: string
-        description: an example
-        required: true
-      - name: Sex
-        in: query
-        type: string
-        description: an example
-        required: true
-      responses:
-        200:
-          description: Returns all examples
-
-
-
-  /iras/addFile:
+   /iras/addFile:
     post:
       tags:
       - Iras
@@ -176,62 +142,6 @@ paths:
           description: Return the example with the specified id
         404:
           description: Example not found
-
-  /balance/hello:
-    get:
-      tags:
-      - Balance
-      description: Get User Balance
-      responses:
-        200:
-          description: Returns User's Currently Balance
-
-  /balance/{id}:
-    get:
-      tags:
-      - Balance
-      parameters:
-      - name: id
-        in: path
-        required: true
-        description: The id of the user to retrieve currently balance
-        type: string
-      description: Get User Balance
-      responses:
-        200:
-          description: Returns User's Currently Balance
-  /balance/user:
-    post:
-      tags:
-      - Balance
-      Summary: Add the new user
-      parameters:
-      - name: id
-        in: body
-        required: true
-        schema:
-          $ref: "#/definitions/user"
-      description: The id of the user to be added
-      responses:
-        200:
-          description: Returns User's Current Balance
-
-  /balance:
-    post:
-      tags:
-      - Balance
-      parameters:
-      - name: move balance request
-        in: body
-        description: The id of the user to retrieve currently balance
-        required: true
-        schema:
-          $ref: "#/definitions/move"
-      description: Get User Balance
-      responses:
-        200:
-          description: Returns User's Currently Balance
-
 
   /spec:
     get:
