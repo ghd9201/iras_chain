@@ -81,6 +81,38 @@ paths:
         200:
           description: Returns File's Hash
 
+  /iras/getFileRecord:fileName:
+    get:
+      tags:
+        - Iras
+      Summary: Add the new File info
+      parameters:
+        - name: fileName
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/file"
+      description: The id of the user to be added
+      responses:
+        200:
+          description: Returns File's Hash
+
+  /iras/getFileRecord:fileHash:
+    get:
+      tags:
+        - Iras
+      Summary: Add the new File info
+      parameters:
+        - name: fileHash
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/file"
+      description: The id of the user to be added
+      responses:
+        200:
+          description: Returns File's Hash
+
   /examples:
     get:
       tags:

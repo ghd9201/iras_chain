@@ -13,8 +13,10 @@ class IrasService {
 
     if(org == 'Org1')
       peer = 'peer0.org1.iras.com';
-    else
+    else if(org == 'Org2')
       peer = 'peer0.org2.iras.com';
+    else
+      return false;
 
 
     args.push(req.body.fileHash);
@@ -32,6 +34,22 @@ class IrasService {
     l.debug(`invoke peers:${peers}`);
     return Promise.resolve(transaction.invokeChainCode(peers, 'iraschannel', 'iras', 'addFile', args, 'admin',org));
 
+  }
+
+  getFileRecordHash(req, res) {
+    const args = [];
+
+    args.push(req.params.fileHash);
+    return Promise.resolve(transaction.queryChainCode(null, 'iraschannel', 'iras',
+        args, 'query', 'admin', 'Org1'));
+  }
+
+  getFileRecordName(req, res) {
+    const args = [];
+
+    args.push(req.params.fileName);
+    return Promise.resolve(transaction.queryChainCode(null, 'iraschannel', 'iras',
+        args, 'query', 'admin', 'Org1'));
   }
 }
 
