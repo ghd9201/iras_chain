@@ -23,7 +23,7 @@
         "peer0.org1.iras.com": {},
         "peer1.org1.iras.com": {},
         "peer0.org2.iras.com": {},
-        "peer1.org2.iras.com": {},
+        "peer1.org2.iras.com": {}
       },
       "connection": {
         "timeout": {
@@ -42,7 +42,7 @@
       "mspid": "Org1MSP",
       "fullpath": true,
       "adminPrivateKey": {
-        "path": "/tmp/crypto/peerOrganizations/org1.iras.com/users/Admin@org1.iras.com/msp/keystore/75f3b6245f20af237069add03e545c24a16fa3b0ec6510e86c292cf79c3eb04e_sk",
+        "path": "/tmp/crypto/peerOrganizations/org1.iras.com/users/Admin@org1.iras.com/msp/keystore/75f3b6245f20af237069add03e545c24a16fa3b0ec6510e86c292cf79c3eb04e_sk"
       },
       "signedCert": {
         "path": "/tmp/crypto/peerOrganizations/org1.iras.com/users/Admin@org1.iras.com/msp/signcerts/Admin@org1.iras.com-cert.pem"
@@ -53,17 +53,16 @@
       "mspid": "Org2MSP",
       "fullpath": true,
       "adminPrivateKey": {
-        "path": "/tmp/crypto/peerOrganizations/org2.iras.com/users/Admin@org2.iras.com/msp/keystore/86153df5ce32e718e957273231763dbba3f0c3a3af18f5af4479b3d6c0156801_sk",
+        "path": "/tmp/crypto/peerOrganizations/org2.iras.com/users/Admin@org2.iras.com/msp/keystore/86153df5ce32e718e957273231763dbba3f0c3a3af18f5af4479b3d6c0156801_sk"
       },
       "signedCert": {
         "path": "/tmp/crypto/peerOrganizations/org2.iras.com/users/Admin@org2.iras.com/msp/signcerts/Admin@org2.iras.com-cert.pem"
       }
-    }
     },
     "OrdererMSP": {
       "mspid": "OrdererMSP",
       "adminPrivateKey": {
-        "path": "/tmp/crypto/ordererOrganizations/iras.com/users/Admin@iras.com/msp/keystore/37aad70c91a7e5ca2564950398bd7dd9d503dd7632eb6d049af8747b01fe5f5d_sk",
+        "path": "/tmp/crypto/ordererOrganizations/iras.com/users/Admin@iras.com/msp/keystore/37aad70c91a7e5ca2564950398bd7dd9d503dd7632eb6d049af8747b01fe5f5d_sk"
       },
       "signedCert": {
         "path": "/tmp/crypto/ordererOrganizations/iras.com/users/Admin@iras.com/msp/signcerts/Admin@iras.com-cert.pem"
