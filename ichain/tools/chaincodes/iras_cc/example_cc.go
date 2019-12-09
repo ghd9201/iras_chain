@@ -157,6 +157,33 @@ func (t *SimpleChaincode) addFile(stub shim.ChaincodeStubInterface, args []strin
 	return shim.Success([]byte("Successfully add File to the ledger"))
 }
 
+func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	var A string // Entities
+	var err error
+
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+	}
+
+	A = args[0]
+
+	// Get the state from the ledger
+	Avalbytes, err := stub.GetState(A)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
+		return shim.Error(jsonResp)
+	}
+
+	if Avalbytes == nil {
+		jsonResp := "{\"Error\":\"Nil amount for " + A + "\"}"
+		return shim.Error(jsonResp)
+	}
+
+	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
+	logger.Infof("Query Response:%s\n", jsonResp)
+	return shim.Success(Avalbytes)
+}
 
 func main() {
 	err := shim.Start(new(SimpleChaincode))
